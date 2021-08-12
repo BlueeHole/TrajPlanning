@@ -18,11 +18,13 @@ from threading import Thread
 import operator
 import math
 import cv2 as cv
+import time
 
 REACH_THREHOLD = 5
 BLOCK_SIZE = 5
 start = (4, 4)
 goal = (150, 300)
+
 
 def dis(a, b):
     return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
@@ -60,12 +62,16 @@ def a_star(map, start, goal):
             q.put(nxt)
             from_where[nxt] = now
 
-    print(path_list)
+    # print(path_list)
     return path_list
 
 
-def traj_planning():
-    return a_star()
+def traj_planning(search_map, start, new_goal):
+    start_time = time.time()
+    path = a_star(search_map, start, new_goal)
+    end_time = time.time()
+    print('[路径搜索]耗时{:.4f}秒'.format((end_time-start_time)))
+    return path
 
 
 def visualize_path(path, start, goal):
@@ -81,13 +87,13 @@ def visualize_path(path, start, goal):
 
 def setGoal(event, x, y, flags, param):
     if event == cv.EVENT_LBUTTONDOWN:
-        print('{}, {}'.format(x, y))
+        # print('{}, {}'.format(x, y))
         # 注意这里有个x, y是反着的关系
         goal_x = y//5 * 5 - 1
         goal_y = x//5 * 5 - 1
         new_goal = (goal_x, goal_y)
         print(new_goal)
-        path = a_star(search_map, start, new_goal)
+        path = traj_planning(search_map, start, new_goal)
         visualize_path(path, start, new_goal)
 
 
