@@ -12,7 +12,7 @@
 '''
 
 
-from queue import Queue
+from queue import Queue, PriorityQueue
 from map_manager import Map
 from threading import Thread
 import operator
@@ -30,17 +30,30 @@ def dis(a, b):
     return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
 
 
+def calcCost(now, nxt):
+    return dis(now, nxt)
+
+
+def heuristic(a, b):
+   # Manhattan distance on a square grid
+   return abs(a[0] - b[0]) + abs(a[1] - b[1])
+   # return 0
+
+
 def a_star(map, start, goal):
     path_list = []
     from_where = dict()
     visited = set()
     from_where[start] = (0, 0)
     expand = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
-    q = Queue()
-    q.put(start)
+    q = PriorityQueue()
+    q.put(start, 0.0)
+    cost_so_far = dict()
+    cost_so_far[start] = 0
     visited.add(start)
     while not q.empty():
         now = q.get()
+        # print(now)
         if dis(now, goal) < REACH_THREHOLD:
             print('Reached')
             p = now
@@ -51,15 +64,21 @@ def a_star(map, start, goal):
             break
         for exp in expand:
             nxt = (now[0] + BLOCK_SIZE*exp[0], now[1] + BLOCK_SIZE*exp[1])
+            nxt_cost = cost_so_far[now] + calcCost(now, nxt)
+            if nxt in cost_so_far:
+                if nxt_cost >= cost_so_far[nxt]:
+                    continue
             if not map.inMap(nxt):
                 continue
-            if nxt in visited:
-                continue
-            visited.add(nxt)
+            # 在有cost的情况下不能这么写了，否则就会出现那种折线形路径，不能被优化到最优，但速度快
+            # if nxt in visited:
+            #     continue
             # TODO: 只有纯白代表没障碍
             if not operator.eq(map.getMap()[nxt[0]][nxt[1]], 255):
                 continue
-            q.put(nxt)
+            visited.add(nxt)
+            cost_so_far[nxt] = nxt_cost
+            q.put(nxt, nxt_cost + heuristic(now, nxt))
             from_where[nxt] = now
 
     # print(path_list)
@@ -105,14 +124,11 @@ if __name__ == '__main__':
     # except:
     #     print("Error: 无法启动地图可视化线程")
 
-
-    print('Looking for path...')
     gray = cv.cvtColor(rm_map.getMap(), cv.COLOR_BGR2GRAY)
     retval, map = cv.threshold(gray, 127, 255, cv.THRESH_BINARY)
-    search_map = Map('map.jpg')
+    search_map = Map('map.jpg')     # 随便初始化一下，然后把它设为实际上是灰度图
     search_map.setMap(map)
 
-    print('Completed')
     while True:
         window = rm_map.showMap()
         cv.setMouseCallback(window, setGoal)
