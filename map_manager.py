@@ -1,6 +1,7 @@
 import cv2 as cv
 import threading
 
+
 class Map:
     def __init__(self, path):
         self.map = cv.imread(path)

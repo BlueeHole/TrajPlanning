@@ -4,10 +4,12 @@
 1. 路径搜索 & 仿真简易平台搭建  【8.12前】
     （1）实现读入图片转化为二维数组 √
     （2）实现在此基础上的bfs算法并可视化 √ (注意窗口是Esc退出)
-    （3）实现A*
-    （3）可以的话最好实现一辆车的控制仿真
+    （3）实现A* √
 2. 路径平滑
 3. 速度规划【8.16前】
+    （1）实现速度规划
+    （2）实现速度规划可视化（可用Matplotlib）
+    （*）可以的话最好实现一辆车的控制仿真
 4. 路径跟随
 '''
 
@@ -20,8 +22,8 @@ import math
 import cv2 as cv
 import time
 
-REACH_THREHOLD = 5
-BLOCK_SIZE = 5
+BLOCK_SIZE = 8
+REACH_THREHOLD = BLOCK_SIZE
 start = (4, 4)
 goal = (150, 300)
 
@@ -43,45 +45,50 @@ def heuristic(a, b):
 def a_star(map, start, goal):
     path_list = []
     from_where = dict()
-    visited = set()
+    # visited = set()
     from_where[start] = (0, 0)
     expand = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
     q = PriorityQueue()
     q.put(start, 0.0)
     cost_so_far = dict()
     cost_so_far[start] = 0
-    visited.add(start)
-    while not q.empty():
-        now = q.get()
-        # print(now)
-        if dis(now, goal) < REACH_THREHOLD:
-            print('Reached')
-            p = now
-            # 这种写法不会把起始点加入进去
-            while from_where[p] != (0, 0):
-                path_list.append(p)
-                p = from_where[p]
-            break
-        for exp in expand:
-            nxt = (now[0] + BLOCK_SIZE*exp[0], now[1] + BLOCK_SIZE*exp[1])
-            nxt_cost = cost_so_far[now] + calcCost(now, nxt)
-            if nxt in cost_so_far:
-                if nxt_cost >= cost_so_far[nxt]:
-                    continue
-            if not map.inMap(nxt):
-                continue
-            # 在有cost的情况下不能这么写了，否则就会出现那种折线形路径，不能被优化到最优，但速度快
-            # if nxt in visited:
-            #     continue
-            # TODO: 只有纯白代表没障碍
-            if not operator.eq(map.getMap()[nxt[0]][nxt[1]], 255):
-                continue
-            visited.add(nxt)
-            cost_so_far[nxt] = nxt_cost
-            q.put(nxt, nxt_cost + heuristic(now, nxt))
-            from_where[nxt] = now
+    # visited.add(start)
+    reached = False
 
-    # print(path_list)
+    if operator.eq(map.getMap()[goal[0]][goal[1]], 255):
+        while not q.empty():
+            now = q.get()
+            # print(now)
+            if dis(now, goal) < REACH_THREHOLD:
+                reached = True
+                print('找到路径')
+                p = now
+                # 这种写法不会把起始点加入进去
+                while from_where[p] != (0, 0):
+                    path_list.append(p)
+                    p = from_where[p]
+                break
+            for exp in expand:
+                nxt = (now[0] + BLOCK_SIZE*exp[0], now[1] + BLOCK_SIZE*exp[1])
+                nxt_cost = cost_so_far[now] + calcCost(now, nxt)
+                if nxt in cost_so_far:
+                    if nxt_cost >= cost_so_far[nxt]:
+                        continue
+                if not map.inMap(nxt):
+                    continue
+                # 在有cost的情况下不能这么写了，否则就会出现那种折线形路径，不能被优化到最优，但这样速度快5,6倍
+                # if nxt in visited:
+                #     continue
+                # TODO: 只有纯白代表没障碍
+                if not operator.eq(map.getMap()[nxt[0]][nxt[1]], 255):
+                    continue
+                # visited.add(nxt)
+                cost_so_far[nxt] = nxt_cost
+                q.put(nxt, nxt_cost + heuristic(now, nxt))
+                from_where[nxt] = now
+
+    if not reached:
+        print('未找到路径')
     return path_list
 
 
