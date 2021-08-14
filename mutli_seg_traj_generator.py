@@ -3,6 +3,7 @@ from numpy.linalg import solve
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import math
+import matplotlib.image as mpimg  # mpimg 用于读取图片
 
 plt.rcParams['font.sans-serif'] = ['SimHei']
 
@@ -135,29 +136,40 @@ def traj_generator(path_list):
     poly_coef_x = MinimumSnapCloseformSolver(path[:, 0], ts, n_seg, n_order)
     poly_coef_y = MinimumSnapCloseformSolver(path[:, 1], ts, n_seg, n_order)
 
-    print(poly_coef_x.shape)
+    # print(poly_coef_x.shape)
 
     # 取系数和可视化步骤
     X_n = []
     Y_n = []
+    traj_list = []
     tstep = 0.01
     for i in range(0, n_seg):
         Pxi = poly_coef_x[(n_order+1)*i : (n_order+1)*(i+1)]
         Pyi = poly_coef_y[(n_order+1)*i : (n_order+1)*(i+1)]
         Pxi = np.flipud(Pxi)
         Pyi = np.flipud(Pyi)
-        print(np.array(Pxi).flatten())
+        # print(np.array(Pxi).flatten())
         t = 0
         while t <= ts[i]:
             X_n.append(np.polyval(Pxi, t))
             Y_n.append(np.polyval(Pyi, t))
+            traj_list.append((np.polyval(Pxi, t), np.polyval(Pyi, t)))
             t = t + tstep
-    plt.plot(X_n, Y_n, 'g-')
+
+    return traj_list
+
+
+def visualize_traj(path_list, traj_list):
+    plt.clf()
+    img = mpimg.imread('map.jpg')
+    plt.imshow(img)
+    X_n = [x[0] for x in traj_list]
+    Y_n = [x[1] for x in traj_list]
+    plt.plot(Y_n, X_n,'g-')
     # print(path)
-    point_x = np.array(path[:, 0])
-    point_y = np.array(path[:, 1])
-    # print(point_x.flatten())
-    plt.scatter(point_x.flatten(), point_y.flatten())
+    point_x = [x[0] for x in path_list]
+    point_y = [x[1] for x in path_list]
+    plt.scatter(point_y, point_x)
     plt.show()
 
 

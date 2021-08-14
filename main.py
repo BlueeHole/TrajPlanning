@@ -22,7 +22,7 @@ import math
 import cv2 as cv
 import time
 
-BLOCK_SIZE = 8
+BLOCK_SIZE = 5
 REACH_THREHOLD = BLOCK_SIZE
 start = (4, 4)
 goal = (150, 300)
@@ -39,20 +39,19 @@ def calcCost(now, nxt):
 def heuristic(a, b):
    # Manhattan distance on a square grid
    return abs(a[0] - b[0]) + abs(a[1] - b[1])
-   # return 0
 
 
 def a_star(map, start, goal):
     path_list = []
     from_where = dict()
-    # visited = set()
+    visited = set()
     from_where[start] = (0, 0)
     expand = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
     q = PriorityQueue()
-    q.put(start, 0.0)
+    q.put(start, heuristic(start, goal))
     cost_so_far = dict()
     cost_so_far[start] = 0
-    # visited.add(start)
+    visited.add(start)
     reached = False
 
     if operator.eq(map.getMap()[goal[0]][goal[1]], 255):
@@ -68,6 +67,7 @@ def a_star(map, start, goal):
                     path_list.append(p)
                     p = from_where[p]
                 break
+            visited.add(now)
             for exp in expand:
                 nxt = (now[0] + BLOCK_SIZE*exp[0], now[1] + BLOCK_SIZE*exp[1])
                 nxt_cost = cost_so_far[now] + calcCost(now, nxt)
@@ -76,20 +76,23 @@ def a_star(map, start, goal):
                         continue
                 if not map.inMap(nxt):
                     continue
-                # 在有cost的情况下不能这么写了，否则就会出现那种折线形路径，不能被优化到最优，但这样速度快5,6倍
-                # if nxt in visited:
-                #     continue
+                if nxt in visited:
+                    continue
                 # TODO: 只有纯白代表没障碍
                 if not operator.eq(map.getMap()[nxt[0]][nxt[1]], 255):
                     continue
                 # visited.add(nxt)
                 cost_so_far[nxt] = nxt_cost
-                q.put(nxt, nxt_cost + heuristic(now, nxt))
+                q.put(nxt, nxt_cost + heuristic(nxt, goal))
                 from_where[nxt] = now
 
     if not reached:
         print('未找到路径')
     return path_list
+
+
+def velocity_planning(search_map, path_list):
+    pass
 
 
 def traj_planning(search_map, start, new_goal):
@@ -120,7 +123,18 @@ def setGoal(event, x, y, flags, param):
         new_goal = (goal_x, goal_y)
         print(new_goal)
         path = traj_planning(search_map, start, new_goal)
-        visualize_path(path, start, new_goal)
+        print(len(path))
+
+        path_ = [path[x] for x in range(0, len(path), 10)]
+
+        from mutli_seg_traj_generator import traj_generator, visualize_traj
+        start_time = time.time()
+        traj_list = traj_generator(path_)
+        end_time = time.time()
+        print('[轨迹生成]耗时{:.4f}秒'.format((end_time - start_time)))
+
+        visualize_traj(path_, traj_list)
+        # visualize_path(path, start, new_goal)
 
 
 if __name__ == '__main__':
