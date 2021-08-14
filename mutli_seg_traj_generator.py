@@ -60,6 +60,10 @@ def getCt(n_seg, n_order):
             Ct[row, i] = 1
             Ct[row+4, i] = 1
             row = row + 8
+    print(Ct.shape)
+    import pandas as pd
+    pd = pd.DataFrame(Ct)
+    pd.to_excel('Ct.xlsx')
     return Ct
 
 def MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order):
@@ -108,7 +112,6 @@ def MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order):
 
     return poly_coef
 
-
 def traj_generator(path_list):
     path = np.mat(np.zeros((len(path_list), 2)))
     for i, point in enumerate(path_list):
@@ -156,6 +159,23 @@ def traj_generator(path_list):
             traj_list.append((np.polyval(Pxi, t), np.polyval(Pyi, t)))
             t = t + tstep
 
+    X_n = X_n[::-1]
+    Y_n = Y_n[::-1]
+    v_x = []
+    v_y = []
+    for i in range(1, len(X_n)):
+        v_x.append(float((X_n[i] - X_n[i-1])/tstep/100))
+        v_y.append(float((Y_n[i] - Y_n[i - 1]) / tstep / 100))
+    print(v_x)
+    t_axis = [t*0.01 for t in range(0, len(X_n)-1)]
+    t_axis_p = [t * 0.01 for t in range(0, len(X_n))]
+    plt.clf()
+    # plt.plot(t_axis_p, X_n)
+    # plt.plot(t_axis_p, Y_n)
+    plt.plot(t_axis, v_x)
+    plt.plot(t_axis, v_y)
+    plt.show()
+
     return traj_list
 
 
@@ -179,6 +199,4 @@ if __name__ == '__main__':
     path_list.append([0.3, 0.4])
     path_list.append([0.5, 0.6])
     path_list.append([0.7, 0.8])
-    path_list.append([0.7, 0.9])
-    path_list.append([1.6, 2.0])
     traj_generator(path_list)

@@ -7,8 +7,12 @@
     （3）实现A* √
 2. 路径平滑
 3. 速度规划【8.16前】
-    （1）实现速度规划
-    （2）实现速度规划可视化（可用Matplotlib）
+    （1）实现速度规划 √
+    （2）实现速度规划可视化（可用Matplotlib）√
+    （3）输出速度曲线
+    （4）解决太靠近障碍物的问题
+    （5）写文档
+    （**）TODO: 尝试不同的速度规划方法
     （*）可以的话最好实现一辆车的控制仿真
 4. 路径跟随
 '''
@@ -125,7 +129,7 @@ def setGoal(event, x, y, flags, param):
         path = traj_planning(search_map, start, new_goal)
         print(len(path))
 
-        path_ = [path[x] for x in range(0, len(path), 10)]
+        path_ = [path[x] for x in range(0, len(path), 15)]
 
         from mutli_seg_traj_generator import traj_generator, visualize_traj
         start_time = time.time()
@@ -133,7 +137,7 @@ def setGoal(event, x, y, flags, param):
         end_time = time.time()
         print('[轨迹生成]耗时{:.4f}秒'.format((end_time - start_time)))
 
-        visualize_traj(path_, traj_list)
+        # visualize_traj(path_, traj_list)
         # visualize_path(path, start, new_goal)
 
 
