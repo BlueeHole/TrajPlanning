@@ -20,7 +20,7 @@
 
 from queue import Queue, PriorityQueue
 from map_manager import Map
-from threading import Thread
+import threading
 import operator
 import math
 import cv2 as cv
@@ -125,11 +125,12 @@ def setGoal(event, x, y, flags, param):
         goal_x = y//5 * 5 - 1
         goal_y = x//5 * 5 - 1
         new_goal = (goal_x, goal_y)
-        print(new_goal)
         path = traj_planning(search_map, start, new_goal)
-        print(len(path))
 
-        path_ = [path[x] for x in range(0, len(path), 15)]
+        path_ = [path[x] for x in range(0, len(path), 10)]
+        path_ = path_[::-1]
+
+        visualize_path(path, start, new_goal)
 
         from mutli_seg_traj_generator import traj_generator, visualize_traj
         start_time = time.time()
@@ -138,7 +139,7 @@ def setGoal(event, x, y, flags, param):
         print('[轨迹生成]耗时{:.4f}秒'.format((end_time - start_time)))
 
         # visualize_traj(path_, traj_list)
-        # visualize_path(path, start, new_goal)
+
 
 
 if __name__ == '__main__':

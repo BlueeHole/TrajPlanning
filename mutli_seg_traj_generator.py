@@ -24,18 +24,28 @@ def getQ(n_seg, n_order, ts):
 
 def getM(n_seg, n_order, ts):
     M = np.mat(np.zeros((8*n_seg, (n_order+1)*n_seg)))
+    tmp = np.mat([
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 1, 2, 3, 4, 5, 6, 7],
+        [0, 0, 2, 6, 12, 20, 30, 42],
+        [0, 0, 0, 6, 24, 60, 120, 210]
+        ])
     for k in range(0, n_seg):
         M_k = np.mat(np.zeros((8, n_order+1)))
         M_k[0, 0] = 1
         M_k[1, 1] = 1
         M_k[2, 2] = 2
         M_k[3, 3] = 6
+        M_k[4:, 0:(n_order+1)] = tmp.copy()
+        # for row in range(4, 8):
+        #     for col in range(0, 8):
+        #         M_k[row, col] = tmp[row-4, col]
         for row in range(4, 8):
             for col in range(row-5, 8):
-                M_k[row, col] = math.pow(ts[k], col+1 - (row - 3))
-        for row in range(5, 8):
-            for col in range(row-5, 8):
-                M_k[row, col] = M_k[row - 1, col] * (col - (row - 5))
+                M_k[row, col] = M_k[row, col] * math.pow(ts[k], col+1 - (row - 3))
+        # for row in range(5, 8):
+        #     for col in range(row-5, 8):
+        #         M_k[row, col] = M_k[row - 1, col] * (col - (row - 5))
         M[k*8:(k+1)*8, k*(n_order+1):(k+1)*(n_order+1)] = M_k
     return M
 
@@ -144,6 +154,8 @@ def traj_generator(path_list):
     # 取系数和可视化步骤
     X_n = []
     Y_n = []
+    X_v = []
+    Y_v = []
     traj_list = []
     tstep = 0.01
     for i in range(0, n_seg):
@@ -156,24 +168,19 @@ def traj_generator(path_list):
         while t <= ts[i]:
             X_n.append(np.polyval(Pxi, t))
             Y_n.append(np.polyval(Pyi, t))
+            X_v.append(np.polyval(np.polyder(np.array(Pxi).flatten()), t)/100)
+            Y_v.append(np.polyval(np.polyder(np.array(Pyi).flatten()), t)/100)
             traj_list.append((np.polyval(Pxi, t), np.polyval(Pyi, t)))
             t = t + tstep
 
+    # 速度可视化
+    plt.rcParams['axes.unicode_minus'] = False  # 防止负号乱码
     X_n = X_n[::-1]
     Y_n = Y_n[::-1]
-    v_x = []
-    v_y = []
-    for i in range(1, len(X_n)):
-        v_x.append(float((X_n[i] - X_n[i-1])/tstep/100))
-        v_y.append(float((Y_n[i] - Y_n[i - 1]) / tstep / 100))
-    print(v_x)
-    t_axis = [t*0.01 for t in range(0, len(X_n)-1)]
-    t_axis_p = [t * 0.01 for t in range(0, len(X_n))]
+    t_axis = [t*0.01 for t in range(0, len(X_n))]
     plt.clf()
-    # plt.plot(t_axis_p, X_n)
-    # plt.plot(t_axis_p, Y_n)
-    plt.plot(t_axis, v_x)
-    plt.plot(t_axis, v_y)
+    plt.plot(t_axis, X_v)
+    plt.plot(t_axis, Y_v)
     plt.show()
 
     return traj_list
