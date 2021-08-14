@@ -1,7 +1,9 @@
-# trajPlanning
+# TrajPlanning
 
 ## 介绍
-路径规划
+
+- 为RM写的路径规划
+- 功能是给定起始、结束点，规划出可以无障碍平滑高效到达的每一时刻的速度集合
 
 
 ## 使用说明
@@ -24,7 +26,7 @@
         - 管理地图，说实话有点鸡肋，而且我还没太搞明白多线程图像刷新是咋个刷新法（OpenCV & 多线程）
     - `multi_seg_traj_generator.py`
         - traj_generator(path_list)
-            - 本模块对外的接口，给定一个path
+            - 本模块对外的接口，给定一个path，会生成通过path（**每10个点取1个点，这个待优化**）中某些点、连接处各阶导数连续、整体Snap平方最小的一条由多项式组成的轨迹，重点是为了得到速度给下层
         - MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
             - 闭式求解一维Minimum-Snap问题的具体函数，提供路径点、时间划分、轨迹段数、轨迹多项式阶数
             - 调用`getQ`, `getM`, `getCt`函数，计算出R矩阵，再分块、求导，得出最终dF
@@ -35,6 +37,7 @@
 
 ## TODOs
 
+- 避障
 - QP法求解
 - 哈深的方法，更简单的规划方法
 - 考虑动力学约束的方法
