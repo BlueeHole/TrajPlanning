@@ -70,7 +70,6 @@ def getCt(n_seg, n_order):
             Ct[row, i] = 1
             Ct[row+4, i] = 1
             row = row + 8
-    print(Ct.shape)
     import pandas as pd
     pd = pd.DataFrame(Ct)
     pd.to_excel('Ct.xlsx')
@@ -173,18 +172,7 @@ def traj_generator(path_list):
             traj_list.append((np.polyval(Pxi, t), np.polyval(Pyi, t)))
             t = t + tstep
 
-    # 速度可视化
-    plt.rcParams['axes.unicode_minus'] = False  # 防止负号乱码
-    X_n = X_n[::-1]
-    Y_n = Y_n[::-1]
-    t_axis = [t*0.01 for t in range(0, len(X_n))]
-    plt.clf()
-    plt.plot(t_axis, X_v)
-    plt.plot(t_axis, Y_v)
-    plt.show()
-
-    return traj_list
-
+    return traj_list, X_v, Y_v
 
 def visualize_traj(path_list, traj_list):
     plt.clf()
@@ -197,6 +185,16 @@ def visualize_traj(path_list, traj_list):
     point_x = [x[0] for x in path_list]
     point_y = [x[1] for x in path_list]
     plt.scatter(point_y, point_x)
+    plt.show()
+
+
+def visualize_vel(X_v, Y_v):
+    # 速度可视化
+    plt.rcParams['axes.unicode_minus'] = False  # 防止负号乱码
+    t_axis = [t * 0.01 for t in range(0, len(X_v))]
+    plt.clf()
+    plt.plot(t_axis, X_v)
+    plt.plot(t_axis, Y_v)
     plt.show()
 
 
