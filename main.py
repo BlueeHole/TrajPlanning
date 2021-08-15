@@ -66,10 +66,10 @@ def a_star(map, start, goal):
                 reached = True
                 print('找到路径')
                 p = now
-                # 这种写法不会把起始点加入进去
                 while from_where[p] != (0, 0):
                     path_list.append(p)
                     p = from_where[p]
+                path_list.append(start)
                 break
             visited.add(now)
             for exp in expand:
@@ -92,11 +92,7 @@ def a_star(map, start, goal):
 
     if not reached:
         print('未找到路径')
-    return path_list
-
-
-def velocity_planning(search_map, path_list):
-    pass
+    return path_list[::-1]
 
 
 def traj_planning(search_map, start, new_goal):
@@ -108,12 +104,11 @@ def traj_planning(search_map, start, new_goal):
 
 
 def visualize_path(path, start, goal):
-    # 要求：path包含终点而不包含起点
     rm_map.refresh()
     rm_map.getMap()[start[0]: start[0] + BLOCK_SIZE, start[1]: start[1] + BLOCK_SIZE] = [0, 0, 255]
     rm_map.getMap()[goal[0]: goal[0] + BLOCK_SIZE, goal[1]: goal[1] + BLOCK_SIZE] = [0, 255, 0]
     x = 255
-    for p in path[1:]:  # 不包括终点
+    for p in path[1:-1]:  # 不包括终点和起始点
         x = (x - 10) % 256  # 变色绘制路径
         rm_map.getMap()[p[0]: p[0] + BLOCK_SIZE, p[1]: p[1] + BLOCK_SIZE] = [x, x, 0]
 
@@ -127,19 +122,18 @@ def setGoal(event, x, y, flags, param):
         new_goal = (goal_x, goal_y)
         path = traj_planning(search_map, start, new_goal)
 
-        path_ = [path[x] for x in range(0, len(path), 10)]
-        path_ = path_[::-1]
+        path_ = path[0:min(len(path), 40)]
+        path_ = [path_[x] for x in range(0, len(path_), math.floor(len(path_)/8))]
 
         visualize_path(path, start, new_goal)
 
         from mutli_seg_traj_generator import traj_generator, visualize_traj
         start_time = time.time()
-        traj_list = traj_generator(path_)
+        traj_list, X_v, Y_v = traj_generator(path_)
         end_time = time.time()
         print('[轨迹生成]耗时{:.4f}秒'.format((end_time - start_time)))
 
-        # visualize_traj(path_, traj_list)
-
+        visualize_traj(path_, traj_list)
 
 
 if __name__ == '__main__':
