@@ -72,7 +72,7 @@ def getCt(n_seg, n_order):
             row = row + 8
     import pandas as pd
     pd = pd.DataFrame(Ct)
-    pd.to_excel('Ct.xlsx')
+    # pd.to_excel('Ct.xlsx')
     return Ct
 
 def MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order):
@@ -91,7 +91,7 @@ def MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order):
     C = Ct.T
     import pandas as pd
     pdr = pd.DataFrame(C)
-    pdr.to_excel('C.xlsx', index=False, header=False)
+    # pdr.to_excel('C.xlsx', index=False, header=False)
 
     R = C * M.I.T * Q * M.I * Ct
 

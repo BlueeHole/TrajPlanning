@@ -6,6 +6,12 @@
 - 功能是给定起始、结束点，规划出可以无障碍平滑高效到达的每一时刻的速度集合
 
 
+## 环境要求
+- 使用pip管理包
+  - `pip install pandas opencv-python matplotlib openpyxl`
+- 如果报错，可以在pip后跟以下参数
+  - `-i http://pypi.douban.com/simple --trusted-host pypi.douban.com`
+
 ## 使用说明
 
 - 运行main.py
